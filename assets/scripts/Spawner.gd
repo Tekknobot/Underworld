@@ -36,7 +36,7 @@ func spawn():
 
 func _on_timer_timeout():
 	var total_enemies = get_tree().get_nodes_in_group("enemies")
-	if total_enemies.size() > 10:
+	if total_enemies.size() > 2:
 		return
 	else:
 		spawn()

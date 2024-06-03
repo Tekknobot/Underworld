@@ -29,6 +29,10 @@ var rng = RandomNumberGenerator.new()
 var animate_once = false
 
 var roll_amount = 35
+var health_max = 10
+var health_current = 10
+var dead = false
+var hit = false
 
 func _physics_process(delta):
 	# Add the gravity.
@@ -36,22 +40,22 @@ func _physics_process(delta):
 		velocity.y += gravity * delta
 
 	# Handle attack.
-	if Input.is_action_just_pressed("attack") and is_on_floor():	
+	if Input.is_action_just_pressed("attack") and is_on_floor() and dead == false:	
 		is_attacking = true		
 
 	# Handle roll.
-	if Input.is_action_just_pressed("roll") and is_on_floor():	
+	if Input.is_action_just_pressed("roll") and is_on_floor() and dead == false:	
 		is_rolling = true				
 			
-	if is_on_floor() and is_attacking == false and is_rolling == false:
+	if is_on_floor() and is_attacking == false and is_rolling == false and dead == false:
 		_direction = Input.get_axis("move_left", "move_right")	
 	elif is_on_floor() and is_attacking == true:
 		_direction = 0
 		
 		
-	if is_on_floor() and is_rolling == false:
+	if is_on_floor() and is_rolling == false and dead == false:
 		pass
-	elif is_on_floor() and is_rolling == true:
+	elif is_on_floor() and is_rolling == true and dead == false:
 		_direction = 0
 		if animated_sprite.flip_h == false:
 			position = position.lerp(Vector2(position.x+roll_amount, position.y), 0.1)
@@ -70,13 +74,13 @@ func _physics_process(delta):
 
 		
 	#Play animation
-	if is_on_floor() and is_attacking == false and is_rolling == false:		
+	if is_on_floor() and is_attacking == false and is_rolling == false and dead == false:		
 		if direction == 0:
 			animated_sprite.play("idle")
 		else :
 			animated_sprite.play("run")	
 			
-	if is_on_floor() and is_attacking == true and is_rolling == false:
+	if is_on_floor() and is_attacking == true and is_rolling == false and dead == false:
 		if rng.randi_range(0, 1) == 0 and !animate_once:
 			animated_sprite.play("attack_1")
 			animate_once = true
@@ -90,14 +94,14 @@ func _physics_process(delta):
 		hitbox.disabled = true	
 		animate_once = false
 	
-	if is_on_floor() and is_rolling == true:
+	if is_on_floor() and is_rolling == true and dead == false:
 		animated_sprite.play("roll")
 		shape.disabled = true
 		await animated_sprite.animation_finished
 		shape.disabled = false
 		is_rolling = false
 				
-	if not is_on_floor():
+	if not is_on_floor() and dead == false:
 		if velocity.y <= 0.0: # moving up
 			animated_sprite.play("jump")
 		elif velocity.y > 0.0 : # moving down
@@ -110,7 +114,24 @@ func _physics_process(delta):
 
 	move_and_slide()
 
-
+func take_damage():
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "modulate:v", 1, 0.5).from(5)	
+	health_current -= 1
+	hit = true
+	animated_sprite.play("hit")
+	_direction = 0
+	await animated_sprite.animation_finished
+	hit = false
+	if health_current <= 0:	
+		_direction = 0
+		dead = true
+		animated_sprite.play("death")
+		shape.disabled = true
+		gravity = 0
+		await animated_sprite.animation_finished
+		#self.queue_free()
+		
 func _on_weapon_body_entered(body):
 	camera.shake(0.1, 30, 3)
 	body.take_damage()
