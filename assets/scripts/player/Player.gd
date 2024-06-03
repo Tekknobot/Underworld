@@ -11,6 +11,10 @@ var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 @onready var weapon = $Weapon
 @onready var hitbox = $Weapon/hitbox
 @onready var shape = $CollisionShape2D
+@onready var healthbar = $HealthBar/BlackBorder/HealthProgressBar
+@onready var levelbar = $LevelBar/BlackBorder/LevelProgressBar
+
+
 
 @onready var camera = $"../Camera2D"
 
@@ -114,6 +118,20 @@ func _physics_process(delta):
 
 	move_and_slide()
 
+	healthbar.value = health_current
+	if healthbar.value <= 0:
+		_direction = 0
+		dead = true
+		animated_sprite.play("death")
+		shape.disabled = true
+		gravity = 0
+		await animated_sprite.animation_finished
+		hide()
+
+	if levelbar.value >= levelbar.max_value:
+		health_current = healthbar.max_value
+		levelbar.value = 0
+		
 func take_damage():
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate:v", 1, 0.5).from(5)	
@@ -135,3 +153,4 @@ func take_damage():
 func _on_weapon_body_entered(body):
 	camera.shake(0.1, 30, 3)
 	body.take_damage()
+	levelbar.value += 1

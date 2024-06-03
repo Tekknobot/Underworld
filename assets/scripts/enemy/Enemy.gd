@@ -75,7 +75,7 @@ func _physics_process(delta):
 		elif velocity.y > 0.0 : # moving down
 			animated_sprite.play("fall")
 	
-	if player.position.distance_to(position) < 35:
+	if player.position.distance_to(position) < 35 and dead == false:
 		if rng.randi_range(0, 1) == 0 and !animate_once:
 			animated_sprite.play("attack_1")
 			animate_once = true
