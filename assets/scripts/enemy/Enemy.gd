@@ -13,6 +13,9 @@ var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 @onready var hitbox = $Weapon/hitbox
 @onready var camera = $"../Camera2D"
 
+@onready var stream = $AudioStreamPlayer2D
+
+
 var player 
 var _player
 
@@ -30,6 +33,9 @@ var hit = false
 var rng = RandomNumberGenerator.new()
 var animate_once = false
 
+var attack_1_audio = preload("res://assets/audio/sfx/attack_1.wav")
+var attack_2_audio = preload("res://assets/audio/sfx/attack_2.wav")
+var death_audio = preload("res://assets/audio/sfx/sfx_deathscream_human1.wav")
 
 func ready():
 	pass
@@ -79,9 +85,13 @@ func _physics_process(delta):
 		if rng.randi_range(0, 1) == 0 and !animate_once:
 			animated_sprite.play("attack_1")
 			animate_once = true
+			stream.stream = attack_1_audio
+			stream.play()					
 		elif rng.randi_range(0, 1) == 1 and !animate_once:
 			animated_sprite.play("attack_2")
 			animate_once = true	
+			stream.stream = attack_2_audio
+			stream.play()					
 		if animated_sprite.get_frame() == 3:
 			hitbox.disabled = false
 		is_attacking = true	
@@ -113,6 +123,8 @@ func take_damage():
 		animated_sprite.play("death")
 		shape.disabled = true
 		gravity = 0
+		stream.stream = death_audio
+		stream.play()				
 		await animated_sprite.animation_finished
 		self.queue_free()
 

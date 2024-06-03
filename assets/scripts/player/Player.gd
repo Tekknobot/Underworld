@@ -14,9 +14,14 @@ var gravity = ProjectSettings.get_setting("physics/2d/default_gravity")
 @onready var healthbar = $HealthBar/BlackBorder/HealthProgressBar
 @onready var levelbar = $LevelBar/BlackBorder/LevelProgressBar
 
-
-
 @onready var camera = $"../Camera2D"
+@onready var stream = $AudioStreamPlayer2D
+
+var attack_1_audio = preload("res://assets/audio/sfx/attack_1.wav")
+var attack_2_audio = preload("res://assets/audio/sfx/attack_2.wav")
+
+var death_audio = preload("res://assets/audio/sfx/sfx_deathscream_human1.wav")
+var levelup_audio = preload("res://assets/audio/sfx/sfx_sounds_powerup4.wav")
 
 var is_attacking = false
 var attack_2 = false
@@ -31,6 +36,7 @@ var lastAttack
 
 var rng = RandomNumberGenerator.new()
 var animate_once = false
+var audio_once = false
 
 var roll_amount = 35
 var health_max = 10
@@ -88,9 +94,13 @@ func _physics_process(delta):
 		if rng.randi_range(0, 1) == 0 and !animate_once:
 			animated_sprite.play("attack_1")
 			animate_once = true
+			stream.stream = attack_1_audio
+			stream.play()
 		elif rng.randi_range(0, 1) == 1 and !animate_once:
 			animated_sprite.play("attack_2")
 			animate_once = true	
+			stream.stream = attack_2_audio
+			stream.play()			
 		if animated_sprite.get_frame() == 3:
 			hitbox.disabled = false
 		await animated_sprite.animation_finished
@@ -125,12 +135,24 @@ func _physics_process(delta):
 		animated_sprite.play("death")
 		shape.disabled = true
 		gravity = 0
+		if audio_once == false:
+			stream.stream = death_audio
+			stream.play()			
+			audio_once = true
 		await animated_sprite.animation_finished
 		hide()
 
 	if levelbar.value >= levelbar.max_value:
 		health_current = healthbar.max_value
 		levelbar.value = 0
+		var tween: Tween = create_tween()
+		tween.tween_property(self, "modulate:v", 1, 1).from(5)
+		if audio_once == false:
+			stream.stream = levelup_audio
+			stream.play()			
+			audio_once = true
+			await get_tree().create_timer(2)
+			audio_once = false				
 		
 func take_damage():
 	var tween: Tween = create_tween()
@@ -148,6 +170,8 @@ func take_damage():
 		shape.disabled = true
 		gravity = 0
 		await animated_sprite.animation_finished
+		stream.stream = death_audio
+		stream.play()			
 		#self.queue_free()
 		
 func _on_weapon_body_entered(body):
