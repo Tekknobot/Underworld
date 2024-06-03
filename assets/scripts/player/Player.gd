@@ -84,7 +84,7 @@ func _physics_process(delta):
 
 		
 	#Play animation
-	if is_on_floor() and is_attacking == false and is_rolling == false and dead == false:		
+	if is_on_floor() and is_attacking == false and is_rolling == false and dead == false and hit == false:		
 		if direction == 0:
 			animated_sprite.play("idle")
 		else :
@@ -114,6 +114,7 @@ func _physics_process(delta):
 		await animated_sprite.animation_finished
 		shape.disabled = false
 		is_rolling = false
+		
 				
 	if not is_on_floor() and dead == false:
 		if velocity.y <= 0.0: # moving up
