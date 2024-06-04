@@ -1,7 +1,7 @@
 extends CharacterBody2D
 
 
-var SPEED = 200.0
+var SPEED = 125.0
 const JUMP_VELOCITY = -300.0
 
 # Get the gravity from the project settings to be synced with RigidBody nodes.
@@ -173,6 +173,13 @@ func _physics_process(delta):
 			audio_once = true
 			await get_tree().create_timer(2)
 			audio_once = false				
+
+func _input(event):
+	if event is InputEventKey:	
+		if event.pressed and event.keycode == KEY_ESCAPE:
+			get_tree().quit()				
+		if event.pressed and event.keycode == KEY_R:
+			get_tree().reload_current_scene()
 		
 func take_damage():
 	var tween: Tween = create_tween()
@@ -190,8 +197,8 @@ func take_damage():
 		shape.disabled = true
 		gravity = 0
 		await animated_sprite.animation_finished
-		stream.stream = death_audio
-		stream.play()			
+		#stream.stream = death_audio
+		#stream.play()			
 		#self.queue_free()
 		
 func _on_weapon_body_entered(body):
