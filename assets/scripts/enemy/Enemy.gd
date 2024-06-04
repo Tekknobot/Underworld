@@ -37,6 +37,8 @@ var attack_1_audio = preload("res://assets/audio/sfx/attack_1.wav")
 var attack_2_audio = preload("res://assets/audio/sfx/attack_2.wav")
 var death_audio = preload("res://assets/audio/sfx/sfx_deathscream_human1.wav")
 
+var push = 25
+
 func ready():
 	pass
 
@@ -81,7 +83,7 @@ func _physics_process(delta):
 		elif velocity.y > 0.0 : # moving down
 			animated_sprite.play("fall")
 	
-	if player.position.distance_to(position) < 35 and dead == false:
+	if player.position.distance_to(position) < 45 and dead == false:
 		if rng.randi_range(0, 1) == 0 and !animate_once:
 			animated_sprite.play("attack_1")
 			animate_once = true
@@ -115,7 +117,14 @@ func take_damage():
 	hit = true
 	animated_sprite.play("hit")
 	_direction = 0
-	await animated_sprite.animation_finished
+	if animated_sprite.flip_h == true:
+		var push_tween: Tween = create_tween()
+		push_tween.tween_property(self, "position", Vector2(position.x+push, position.y), 0.5)		
+	else:
+		var push_tween: Tween = create_tween()
+		push_tween.tween_property(self, "position", Vector2(position.x-push, position.y), 0.5)	
+		
+	await animated_sprite.animation_finished	
 	hit = false
 	if health_current <= 0:	
 		_direction = 0

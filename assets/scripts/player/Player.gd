@@ -28,6 +28,7 @@ var attack_2 = false
 var is_running = false
 var is_jumping = false
 var is_rolling = false
+var is_dashing = false
 
 var _direction = 0
 
@@ -56,13 +57,17 @@ func _physics_process(delta):
 	# Handle roll.
 	if Input.is_action_just_pressed("roll") and is_on_floor() and dead == false:	
 		is_rolling = true				
+
+	# Handle dashback.
+	if Input.is_action_just_pressed("dashback") and is_on_floor() and dead == false:	
+		is_dashing = true				
 			
-	if is_on_floor() and is_attacking == false and is_rolling == false and dead == false:
+			
+	if is_on_floor() and is_attacking == false and is_rolling == false and is_dashing == false and dead == false:
 		_direction = Input.get_axis("move_left", "move_right")	
 	elif is_on_floor() and is_attacking == true:
 		_direction = 0
-		
-		
+			
 	if is_on_floor() and is_rolling == false and dead == false:
 		pass
 	elif is_on_floor() and is_rolling == true and dead == false:
@@ -71,6 +76,16 @@ func _physics_process(delta):
 			position = position.lerp(Vector2(position.x+roll_amount, position.y), 0.1)
 		else:
 			position = position.lerp(Vector2(position.x-roll_amount, position.y), 0.1)	
+
+	if is_on_floor() and is_dashing == false and dead == false:
+		pass
+	elif is_on_floor() and is_dashing == true and dead == false:
+		_direction = 0
+		if animated_sprite.flip_h == false:
+			position = position.lerp(Vector2(position.x-roll_amount/2, position.y), 0.4)
+		else:
+			position = position.lerp(Vector2(position.x+roll_amount/2, position.y), 0.4)	
+			
 			
 	# Get input direction: -1 , 0 , 1
 	var direction = _direction
@@ -84,13 +99,13 @@ func _physics_process(delta):
 
 		
 	#Play animation
-	if is_on_floor() and is_attacking == false and is_rolling == false and dead == false and hit == false:		
+	if is_on_floor() and is_attacking == false and is_rolling == false and is_dashing == false and dead == false and hit == false:		
 		if direction == 0:
 			animated_sprite.play("idle")
 		else :
 			animated_sprite.play("run")	
 			
-	if is_on_floor() and is_attacking == true and is_rolling == false and dead == false:
+	if is_on_floor() and is_attacking == true and is_rolling == false and is_dashing == false  and dead == false:
 		if rng.randi_range(0, 1) == 0 and !animate_once:
 			animated_sprite.play("attack_1")
 			animate_once = true
@@ -115,6 +130,10 @@ func _physics_process(delta):
 		shape.disabled = false
 		is_rolling = false
 		
+	if is_on_floor() and is_dashing == true and dead == false:
+		animated_sprite.play("dashback")
+		await animated_sprite.animation_finished
+		is_dashing = false
 				
 	if not is_on_floor() and dead == false:
 		if velocity.y <= 0.0: # moving up
